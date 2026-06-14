@@ -1,0 +1,8 @@
+{
+  "discordToken": "your-discord-user-token-here",
+  "grokSso": "your-grok-sso-cookie-here",
+  "grokSsoRw": "",
+  "grokUserAgent": "",
+  "commandPrefix": "!grok",
+  "contextMessageCount": 50
+}
