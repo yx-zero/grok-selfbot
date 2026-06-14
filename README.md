@@ -19,6 +19,18 @@ Grok answers as if it were a regular Discord user (casual, no assistant-speak), 
 
 It only reacts to **your own** messages — not other users'.
 
+### Follow-up conversations
+
+Grok itself is stateless (each request is a fresh incognito chat), so the bot reconstructs the conversation on its side. **Reply to any Grok answer** with a follow-up — no `!grok` prefix needed — and the bot continues the thread:
+
+- The prior question/answer turns are kept in memory and fed back to Grok so it stays consistent.
+- Works when replying to any message of a multi-part answer.
+- History is capped at `maxHistoryTurns` (default 20 turns). The thread store is in-memory and **resets on restart** — replying to an answer from before a restart is ignored.
+
+### `[responding]` status indicator
+
+While a request is in flight, the bot appends `[responding]` to your trigger message (e.g. `!grok hi` → `!grok hi [responding]`) and restores the original text once Grok answers (or on error).
+
 ## Requirements
 
 - **Node.js 18+** (uses the built-in `node:http2`)
@@ -49,18 +61,20 @@ cp config.example.json config.json
   "grokSsoRw": "",
   "grokUserAgent": "",
   "commandPrefix": "!grok",
-  "contextMessageCount": 50
+  "contextMessageCount": 50,
+  "maxHistoryTurns": 20
 }
 ```
 
-| Field                 | Required | Description                                                              |
-| --------------------- | -------- | ------------------------------------------------------------------------ |
-| `discordToken`        | **yes**  | Your Discord user account token.                                         |
-| `grokSso`             | **yes**  | The `sso` session cookie value from grok.com.                            |
-| `grokSsoRw`           | no       | The `sso-rw` cookie; defaults to `grokSso` if empty.                     |
-| `grokUserAgent`       | no       | Override the User-Agent sent to Grok.                                     |
-| `commandPrefix`       | no       | The trigger prefix. Defaults to `!grok`.                                  |
-| `contextMessageCount` | no       | How many recent messages to include as context. Defaults to `50`.        |
+| Field                 | Required | Description                                                                       |
+| --------------------- | -------- | -------------------------------------------------------------------------------- |
+| `discordToken`        | **yes**  | Your Discord user account token.                                                 |
+| `grokSso`             | **yes**  | The `sso` session cookie value from grok.com.                                    |
+| `grokSsoRw`           | no       | The `sso-rw` cookie; defaults to `grokSso` if empty.                             |
+| `grokUserAgent`       | no       | Override the User-Agent sent to Grok.                                            |
+| `commandPrefix`       | no       | The trigger prefix. Defaults to `!grok`.                                         |
+| `contextMessageCount` | no       | How many recent messages to include as context. Defaults to `50`.               |
+| `maxHistoryTurns`     | no       | Max conversation turns kept for follow-ups (1 turn = your msg + reply). Default `20`. |
 
 > [!IMPORTANT]
 > `config.json` holds two **credentials** — treat them like passwords. It is gitignored by default, so it never gets committed. Don't share it, don't paste it into public issues.
@@ -122,9 +136,10 @@ grok-selfbot/
 └─ src/
    ├─ index.ts             # entry point: login + wiring
    ├─ config.ts            # loads config.json
-   ├─ handler.ts           # !grok detection, context, reply
+   ├─ handler.ts           # !grok detection, follow-ups, status indicator, reply
+   ├─ threads.ts           # in-memory conversation history for follow-ups
    ├─ context.ts           # fetch + format recent messages
-   ├─ prompt.ts            # the system prompt
+   ├─ prompt.ts            # system prompt + follow-up prompt builder
    ├─ format.ts            # strip citations + chunk to 2000 chars
    └─ grok/                # Grok HTTP/2 gRPC client
       ├─ client.ts
