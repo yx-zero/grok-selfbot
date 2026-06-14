@@ -4,5 +4,6 @@
   "grokSsoRw": "",
   "grokUserAgent": "",
   "commandPrefix": "!grok",
-  "contextMessageCount": 50
+  "contextMessageCount": 50,
+  "maxHistoryTurns": 20
 }

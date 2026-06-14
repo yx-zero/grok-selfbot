@@ -14,11 +14,13 @@ export interface Config {
   grokUserAgent?: string;
   commandPrefix: string;
   contextMessageCount: number;
+  maxHistoryTurns: number;
 }
 
 const DEFAULTS = {
   commandPrefix: "!grok",
   contextMessageCount: 50,
+  maxHistoryTurns: 20,
 };
 
 export function loadConfig(): Config {
@@ -62,5 +64,9 @@ export function loadConfig(): Config {
       typeof parsed.contextMessageCount === "number" && parsed.contextMessageCount > 0
         ? Math.floor(parsed.contextMessageCount)
         : DEFAULTS.contextMessageCount,
+    maxHistoryTurns:
+      typeof parsed.maxHistoryTurns === "number" && parsed.maxHistoryTurns > 0
+        ? Math.floor(parsed.maxHistoryTurns)
+        : DEFAULTS.maxHistoryTurns,
   };
 }
